@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=newzila
+POSTGRES_USER=FLLUTnlaYJrArDVSjFOtccbhmXhxwdSg
+POSTGRES_PASSWORD=DiJcd8qKf4BTRq4S7mX9drAxR7P08MXKdkD7o5tox6mkSp6bWDpNHmlZGNTotWzt
