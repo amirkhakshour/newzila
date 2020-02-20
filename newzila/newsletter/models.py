@@ -114,6 +114,7 @@ class Subscription(models.Model):
         assert self.user or self.email_field, \
             _('Neither an email nor a username is set. This asks for '
               'inconsistency!')
+
         assert ((self.user and not self.email_field) or
                 (self.email_field and not self.user)), \
             _('If user is set, email must be null and vice versa.')
