@@ -332,3 +332,4 @@ newzila/media/
 .envs/*
 !.envs/.local/
 .idea
+db.sqlite
