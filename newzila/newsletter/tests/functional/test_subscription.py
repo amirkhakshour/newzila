@@ -62,7 +62,25 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         self.assertTrue(subscription.is_active)
         self.assertIsNotNone(subscription.verification_date)
 
+    def test_subscribed_after_verification(self):
+        user = self.user_1
+        self.app.post_json(self.newsletter_subscribe_url, user=user)
+        subscription = Subscription.objects.get(newsletter=self.newsletter, user=user)
+
+        response = self.app.get(subscription.subscribe_verification_url())
+
+        subscription.refresh_from_db()
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(subscription.is_active)
+        self.assertIsNotNone(subscription.verification_date)
+
     def test_user_can_unsubscribe(self):
         user = self.user_1
-        response = self.app.post_json(self.newsletter_unsubscribe_url, user=user)
+        self.app.post_json(self.newsletter_subscribe_url, user=user)  # create
+        subscription = Subscription.objects.get(newsletter=self.newsletter, user=user)
+        self.app.get(subscription.subscribe_verification_url())  # verify
+        response = self.app.get(self.newsletter_unsubscribe_url, user=user)
+
+        subscription.refresh_from_db()
         self.assertEqual(200, response.status_code)
+        self.assertFalse(subscription.is_active)

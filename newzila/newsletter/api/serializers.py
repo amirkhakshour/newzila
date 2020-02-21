@@ -25,3 +25,8 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         subscription = super().create(validated_data)
         subscription.send_verification_email()
         return subscription
+
+
+class SubscriptionReadSerializer(SubscriptionSerializer):
+    class Meta(SubscriptionSerializer.Meta):
+        validators = []

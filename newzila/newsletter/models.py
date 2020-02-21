@@ -6,6 +6,7 @@ from django.template.loader import select_template
 from django.core.mail import EmailMultiAlternatives
 from django.urls import reverse
 from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
 
 from .utils import make_verification_token
 
@@ -207,4 +208,9 @@ class Subscription(models.Model):
             return
         self.verification_date = now()
         self.is_active = True
+        self.save()
+
+    def subscribe_unsubscribe(self):
+        assert self.verification_date is not None, ValidationError("Your subscription is not verified")
+        self.is_active = False
         self.save()
