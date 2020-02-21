@@ -26,3 +26,10 @@ class TestNewsletterViewSet(WebTestCase):
         response = self.app.post_json(self.newsletter_subscribe_url, user=user)
         self.assertEqual(200, response.status_code)
         Subscription.objects.get(user=user)  # TODO check for output
+
+    def test_user_cant_subscribe_adding_custom_email(self):
+        # subscribe first
+        Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')
+        with self.assertRaises(Exception):
+            # subscribe using using custom email
+            Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')

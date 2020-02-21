@@ -30,3 +30,12 @@ class SubscriptionModelTest(TestCase):
         Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')
         with self.assertRaises(Exception):
             Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')
+
+    def test_user_cant_subscribe_adding_custom_email(self):
+        """We can't add multiple subscription for the same newsletter for the same user/email_field"""
+        # subscribe first with user data
+        Subscription.objects.create(newsletter=self.newsletter, user=self.subscriber_1)
+        with self.assertRaises(Exception):
+            # subscribe afterwards using custom email
+            Subscription.objects.create(newsletter=self.newsletter,
+                                        email_field='dummy@example.com', user=self.subscriber_1)

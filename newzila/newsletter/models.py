@@ -3,6 +3,8 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
 
+from .utils import make_verification_token
+
 AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
 
@@ -66,6 +68,13 @@ class Subscription(models.Model):
 
     create_date = models.DateTimeField(editable=False, default=now)
 
+    verification_token = models.CharField(
+        verbose_name=_('verification_token'), max_length=40,
+        default=make_verification_token
+    )
+    verification_date = models.DateTimeField(
+        verbose_name=_('Verification date'), blank=True, null=True)
+
     @property
     def email(self):
         if self.user:
@@ -128,5 +137,5 @@ class Subscription(models.Model):
     def already_subscribed(self):
         if self.pk is not None:  # modifying/saving already created subscriptions
             return False
-        return Subscription.objects.filter(newsletter_id=self.newsletter.pk).\
+        return Subscription.objects.filter(newsletter_id=self.newsletter.pk). \
             filter(models.Q(email_field=self.email) | models.Q(user=self.user)).exists()
