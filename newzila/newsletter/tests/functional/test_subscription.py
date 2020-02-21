@@ -44,5 +44,5 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         self._test_common_part(email_field)
 
         # Check subject
-        expected_subject = 'Confirm subscription for {}.'.format(self.newsletter.title)
+        expected_subject = '{} - Confirm subscription'.format(self.newsletter.title)
         self.assertEqual(expected_subject, mail.outbox[0].subject)

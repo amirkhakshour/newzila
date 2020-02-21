@@ -1,1 +1,1 @@
-subscription title goes here
+{% load i18n %}{{ newsletter.title }} - {% trans "Confirm subscription" %}
