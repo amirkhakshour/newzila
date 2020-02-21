@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.core import mail
 
 from newzila.testcases import WebTestCase, EmailsMixin
 from newzila.newsletter.tests.factories import NewsletterFactory
@@ -41,3 +42,7 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         response = self.app.post_json(self.newsletter_subscribe_url, params=post_params)
         self.assertEqual(200, response.status_code)  # for newly created instance
         self._test_common_part(email_field)
+
+        # Check subject
+        expected_subject = 'Confirm subscription for {}.'.format(self.newsletter.title)
+        self.assertEqual(expected_subject, mail.outbox[0].subject)
