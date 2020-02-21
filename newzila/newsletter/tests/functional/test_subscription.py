@@ -12,8 +12,7 @@ class TestNewsletterViewSet(WebTestCase):
         newsletter = NewsletterFactory()
         kwargs = {'pk': newsletter.id}
         newsletter_url = reverse('api:newsletter-subscribe', kwargs=kwargs)
-        post_params = {'email': 'dummy@example.com'}
-        print("self.user", self.user)
-        response = self.app.post(newsletter_url, params=post_params)
+        post_params = {'email_field': 'dummy@example.com'}
+        response = self.app.post_json(newsletter_url, params=post_params)
         self.assertEqual(200, response.status_code)  # for newly created instance
-        Subscription.objects.get(email_field=post_params['email'])  # creates the subscription
+        Subscription.objects.get(email_field=post_params['email_field'])  # creates the subscription
