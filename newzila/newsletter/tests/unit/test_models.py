@@ -28,6 +28,5 @@ class SubscriptionModelTest(TestCase):
     def test_raises_if_multiple_subscription_for_same_newsletter(self):
         """We can't add multiple subscription for the same newsletter for the same user/email_field"""
         Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')
-
         with self.assertRaises(Exception):
             Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')

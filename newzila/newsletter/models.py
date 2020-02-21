@@ -122,3 +122,11 @@ class Subscription(models.Model):
         assert ((self.user and not self.email_field) or
                 (self.email_field and not self.user)), \
             _('If user is set, email must be null and vice versa.')
+
+        assert not self.already_subscribed()
+
+    def already_subscribed(self):
+        if self.pk is not None:  # modifying/saving already created subscriptions
+            return False
+        return Subscription.objects.filter(newsletter_id=self.newsletter.pk).\
+            filter(models.Q(email_field=self.email) | models.Q(user=self.user)).exists()
