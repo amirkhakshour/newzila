@@ -15,6 +15,7 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         self.newsletter = NewsletterFactory()
         kwargs = {'pk': self.newsletter.id}
         self.newsletter_subscribe_url = reverse('api:newsletter-subscribe', kwargs=kwargs)
+        self.newsletter_unsubscribe_url = reverse('api:newsletter-unsubscribe', kwargs=kwargs)
 
     def test_anonym_user_can_subscribe(self):
         post_params = {'email_field': 'dummy@example.com'}
@@ -60,3 +61,8 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue(subscription.is_active)
         self.assertIsNotNone(subscription.verification_date)
+
+    def test_user_can_unsubscribe(self):
+        user = self.user_1
+        response = self.app.post_json(self.newsletter_unsubscribe_url, user=user)
+        self.assertEqual(200, response.status_code)
