@@ -14,10 +14,18 @@ class WebTestCase(WebTest):
     password = 'somefancypassword'
     permissions = []
 
+    user1_username = 'user1'
+    user1_email = 'user1@example.com'
+    user1_password = 'user1pass'
+
     def setUp(self):
         self.user = None
+        # create a normal user
+        self.user_1 = self.create_user(
+            self.user1_username, self.user1_email, self.user1_password)
+        self.user_1.save()
 
-        if not self.is_anonymous:
+        if not self.is_anonymous:  # create default user in case the global test case user is not anonymous
             self.user = self.create_user(
                 self.username, self.email, self.password)
             self.user.is_staff = self.is_staff

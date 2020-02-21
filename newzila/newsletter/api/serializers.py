@@ -9,6 +9,8 @@ class NewsletterSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
+    email_field = serializers.EmailField(required=False, default='')
+
     class Meta:
         model = Subscription
         fields = [
