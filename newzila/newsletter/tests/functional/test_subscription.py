@@ -40,9 +40,13 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         email_field = 'dummy@example.com'
         post_params = {'email_field': email_field}
         response = self.app.post_json(self.newsletter_subscribe_url, params=post_params)
+        subscription = Subscription.objects.get(newsletter=self.newsletter, email_field=email_field)
         self.assertEqual(200, response.status_code)  # for newly created instance
         self._test_common_part(email_field)
 
         # Check subject
         expected_subject = '{} - Confirm subscription'.format(self.newsletter.title)
         self.assertEqual(expected_subject, mail.outbox[0].subject)
+
+        # Check verification URL
+        self.assertIn(subscription.subscribe_activate_url(), mail.outbox[0].body)
