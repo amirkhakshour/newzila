@@ -54,8 +54,9 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         user = self.user_1
         self.app.post_json(self.newsletter_subscribe_url, user=self.user_1)
         subscription = Subscription.objects.get(newsletter=self.newsletter, user=user)
-
         response = self.app.get(subscription.subscribe_verification_url())
+
+        subscription.refresh_from_db()
         self.assertEqual(200, response.status_code)
         self.assertTrue(subscription.is_active)
         self.assertIsNotNone(subscription.verification_date)

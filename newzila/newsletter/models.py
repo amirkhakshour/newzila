@@ -105,6 +105,8 @@ class Subscription(models.Model):
     verification_date = models.DateTimeField(
         verbose_name=_('Verification date'), blank=True, null=True)
 
+    is_active = models.BooleanField(default=False, blank=True)
+
     @property
     def email(self):
         if self.user:
@@ -199,3 +201,10 @@ class Subscription(models.Model):
             'newsletter_slug': self.newsletter.slug,
             'token': self.verification_token
         })
+
+    def subscribe_verify(self):
+        if self.is_active:
+            return
+        self.verification_date = now()
+        self.is_active = True
+        self.save()

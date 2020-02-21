@@ -37,13 +37,17 @@ class NewsletterViewSet(RetrieveModelMixin, GenericViewSet):
 
     @action(detail=False, methods=["GET"], url_path='(?P<newsletter_slug>[^/.]+)/verify/(?P<token>[^/.]+)')
     def verification(self, request, newsletter_slug, token):
-        """Why use slug instead of IDs? since the slugs are more reliable when migrating data"""
+        """
+        Why use slug instead of IDs? since the slugs are more reliable when migrating data
+        TODO: provide meaningful 404 errors for different resources
+        """
         newsletter = get_object_or_404(
             Newsletter, slug=newsletter_slug
         )
 
-        get_object_or_404(
+        subscription = get_object_or_404(
             Subscription, newsletter=newsletter,
             verification_token=token
         )
+        subscription.subscribe_verify()
         return Response(status=status.HTTP_200_OK)
