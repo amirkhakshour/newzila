@@ -13,7 +13,7 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
     def setUp(self):
         super().setUp()
         self.newsletter = NewsletterFactory()
-        kwargs = {'pk': self.newsletter.id}
+        kwargs = {'slug': self.newsletter.slug}
         self.newsletter_subscribe_url = reverse('api:newsletter-subscribe', kwargs=kwargs)
         self.newsletter_unsubscribe_url = reverse('api:newsletter-unsubscribe', kwargs=kwargs)
 

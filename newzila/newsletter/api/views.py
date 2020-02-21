@@ -16,16 +16,16 @@ class NewsletterViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = Newsletter.objects.all()
     permission_classes = (AllowAny,)
 
-    slug_url_kwarg = 'newsletter_slug'
+    # more maintainable but enforces a second query to get instance from pk on SubscriptionSerializer
+    lookup_field = 'slug'
 
     @action(detail=True, methods=["POST"])
-    def subscribe(self, request, pk, *args, **kwargs):
+    def subscribe(self, request, *args, **kwargs):
         _data = {}
         _data.update(request.data)
-
         # append last to prevent user overriding
         _data.update({
-            'newsletter': pk,
+            'newsletter': self.get_object().pk,
             'user': request.user.pk,
         })
 
@@ -35,15 +35,30 @@ class NewsletterViewSet(RetrieveModelMixin, GenericViewSet):
             serializer.save()
         return Response(status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=["GET"], url_path='(?P<newsletter_slug>[^/.]+)/verify/(?P<token>[^/.]+)')
-    def verification(self, request, newsletter_slug, token):
+    @action(detail=True, methods=["POST"])
+    def unsubscribe(self, request, *args, **kwargs):
+        _data = {}
+        _data.update(request.data)
+
+        # append last to prevent user overriding
+        _data.update({
+            'newsletter': self.get_object().pk,
+            'user': request.user.pk,
+        })
+
+        context = self.get_serializer_context()
+        serializer = SubscriptionSerializer(data=_data, context=context)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+        return Response(status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["GET"], url_path='verify/(?P<token>[^/.]+)')
+    def verification(self, request, token, *args, **kwargs):
         """
         Why use slug instead of IDs? since the slugs are more reliable when migrating data
         TODO: provide meaningful 404 errors for different resources
         """
-        newsletter = get_object_or_404(
-            Newsletter, slug=newsletter_slug
-        )
+        newsletter = self.get_object()
 
         subscription = get_object_or_404(
             Subscription, newsletter=newsletter,

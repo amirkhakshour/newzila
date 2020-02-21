@@ -198,7 +198,7 @@ class Subscription(models.Model):
 
     def subscribe_verification_url(self):
         return reverse('api:newsletter-verification', kwargs={
-            'newsletter_slug': self.newsletter.slug,
+            'slug': self.newsletter.slug,
             'token': self.verification_token
         })
 
