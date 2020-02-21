@@ -49,3 +49,13 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
 
         # Check verification URL
         self.assertIn(subscription.subscribe_verification_url(), mail.outbox[0].body)
+
+    def test_verified_and_active_after_verification(self):
+        user = self.user_1
+        self.app.post_json(self.newsletter_subscribe_url, user=self.user_1)
+        subscription = Subscription.objects.get(newsletter=self.newsletter, user=user)
+
+        response = self.app.get(subscription.subscribe_verification_url())
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(subscription.is_active)
+        self.assertIsNotNone(subscription.verification_date)
