@@ -29,6 +29,7 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
 
     def test_user_cant_subscribe_adding_custom_email(self):
         # subscribe first
+        # todo move to unit tests
         Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')
         with self.assertRaises(Exception):
             # subscribe using using custom email

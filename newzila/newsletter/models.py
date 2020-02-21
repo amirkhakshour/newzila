@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
+from django.template.loader import select_template
+from django.core.mail import EmailMultiAlternatives
 
 from .utils import make_verification_token
 
@@ -27,12 +29,38 @@ class Newsletter(models.Model):
         max_length=200, verbose_name=_('sender'), help_text=_('Sender name')
     )
 
+    TEMPLATE_ROOT = 'newsletter/message/'
+
     def __str__(self):
         return self.title
 
     class Meta:
         verbose_name = _('newsletter')
         verbose_name_plural = _('newsletters')
+
+    def get_templates(self):
+        """
+        Returns a subject, text, HTML templates tuple for sending subscription email
+        """
+        tpl_subst = {
+            'newsletter': self.slug
+        }
+
+        subject_template = select_template([
+            self.TEMPLATE_ROOT + '%(newsletter)s/subject.txt' % tpl_subst,
+            self.TEMPLATE_ROOT + 'subject.txt',  # global template for subject message
+        ])
+
+        text_template = select_template([
+            self.TEMPLATE_ROOT + '%(newsletter)s/text.txt' % tpl_subst,
+            self.TEMPLATE_ROOT + 'text.txt',
+        ])
+
+        html_template = select_template([
+            self.TEMPLATE_ROOT + '%(newsletter)s/text.html' % tpl_subst,
+            self.TEMPLATE_ROOT + 'text.html',
+        ])
+        return subject_template, text_template, html_template
 
 
 class Subscription(models.Model):
@@ -139,3 +167,27 @@ class Subscription(models.Model):
             return False
         return Subscription.objects.filter(newsletter_id=self.newsletter.pk). \
             filter(models.Q(email_field=self.email) | models.Q(user=self.user)).exists()
+
+    def send_verification_email(self):
+        email_context = {
+            'subscription': self,
+            'newsletter': self.newsletter,
+            'date': self.create_date,
+            'STATIC_URL': settings.STATIC_URL,
+            'MEDIA_URL': settings.MEDIA_URL
+        }
+
+        (subject_template, text_template, html_template) = self.newsletter.get_templates()
+        subject = subject_template.render(email_context).strip()
+        text = text_template.render(email_context)
+
+        message = EmailMultiAlternatives(
+            subject, text,
+            from_email=self.newsletter.email,
+            to=[self.email]
+        )
+        message.attach_alternative(
+            html_template.render(email_context), "text/html"
+        )
+
+        message.send()

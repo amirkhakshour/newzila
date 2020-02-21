@@ -19,3 +19,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             'email_field',
             'name_field',
         ]
+
+    def create(self, validated_data):
+        """Put business logic of subscription process to the serializer"""
+        subscription = super().create(validated_data)
+        subscription.send_verification_email()
+        return subscription
