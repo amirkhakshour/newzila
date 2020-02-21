@@ -1,11 +1,11 @@
 from django.urls import reverse
 
-from newzila.testcases import WebTestCase
+from newzila.testcases import WebTestCase, EmailsMixin
 from newzila.newsletter.tests.factories import NewsletterFactory
 from newzila.newsletter.models import Subscription
 
 
-class TestNewsletterViewSet(WebTestCase):
+class TestNewsletterViewSet(EmailsMixin, WebTestCase):
     is_anonymous = True
     csrf_checks = False
 
@@ -33,3 +33,10 @@ class TestNewsletterViewSet(WebTestCase):
         with self.assertRaises(Exception):
             # subscribe using using custom email
             Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')
+
+    def test_email_sent_after_user_subscription(self):
+        email_field = 'dummy@example.com'
+        post_params = {'email_field': email_field}
+        response = self.app.post_json(self.newsletter_subscribe_url, params=post_params)
+        self.assertEqual(200, response.status_code)  # for newly created instance
+        self._test_common_part(email_field)

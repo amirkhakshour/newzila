@@ -1,5 +1,6 @@
-from django_webtest import WebTest
+from django.core import mail
 from django.contrib.auth import get_user_model
+from django_webtest import WebTest
 
 User = get_user_model()
 
@@ -52,3 +53,22 @@ class WebTestCase(WebTest):
     def post(self, url, **kwargs):
         kwargs.setdefault('user', self.user)
         return self.app.post(url, **kwargs)
+
+
+class EmailsMixin:
+
+    def _test_send_plain_text_and_html(self, outboxed_email):
+        email = outboxed_email
+
+        assert '</p>' not in email.body  # Plain text body (because w/o </p> tags)
+
+        html_content = email.alternatives[0][0]
+        assert '</p>' in html_content
+
+        mimetype = email.alternatives[0][1]
+        assert mimetype == 'text/html'
+
+    def _test_common_part(self, email):
+        assert len(mail.outbox) == 1
+        assert mail.outbox[0].to == [email]
+        self._test_send_plain_text_and_html(mail.outbox[0])
