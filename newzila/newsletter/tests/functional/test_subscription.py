@@ -26,7 +26,7 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         user = self.user_1
         response = self.app.post_json(self.newsletter_subscribe_url, user=user)
         self.assertEqual(200, response.status_code)
-        Subscription.objects.get(user=user)  # TODO check for output
+        assert Subscription.objects.get(user=user)  # TODO check for output
 
     def test_user_cant_subscribe_adding_custom_email(self):
         # subscribe first
@@ -37,16 +37,15 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
             Subscription.objects.create(newsletter=self.newsletter, email_field='dummy@example.com')
 
     def test_email_sent_after_user_subscription(self):
-        email_field = 'dummy@example.com'
-        post_params = {'email_field': email_field}
-        response = self.app.post_json(self.newsletter_subscribe_url, params=post_params)
-        subscription = Subscription.objects.get(newsletter=self.newsletter, email_field=email_field)
+        user = self.user_1
+        response = self.app.post_json(self.newsletter_subscribe_url, user=self.user_1)
+        subscription = Subscription.objects.get(newsletter=self.newsletter, user=user)
         self.assertEqual(200, response.status_code)  # for newly created instance
-        self._test_common_part(email_field)
+        self._test_common_part(subscription.email)
 
         # Check subject
         expected_subject = '{} - Confirm subscription'.format(self.newsletter.title)
         self.assertEqual(expected_subject, mail.outbox[0].subject)
 
         # Check verification URL
-        self.assertIn(subscription.subscribe_activate_url(), mail.outbox[0].body)
+        self.assertIn(subscription.subscribe_verification_url(), mail.outbox[0].body)

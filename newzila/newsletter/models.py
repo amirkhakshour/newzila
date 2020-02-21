@@ -4,6 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
 from django.template.loader import select_template
 from django.core.mail import EmailMultiAlternatives
+from django.urls import reverse
+from django.contrib.sites.models import Site
 
 from .utils import make_verification_token
 
@@ -173,6 +175,7 @@ class Subscription(models.Model):
             'subscription': self,
             'newsletter': self.newsletter,
             'date': self.create_date,
+            'site': Site.objects.get_current(),
             'STATIC_URL': settings.STATIC_URL,
             'MEDIA_URL': settings.MEDIA_URL
         }
@@ -189,5 +192,10 @@ class Subscription(models.Model):
         message.attach_alternative(
             html_template.render(email_context), "text/html"
         )
-
         message.send()
+
+    def subscribe_verification_url(self):
+        return reverse('api:newsletter-verification', kwargs={
+            'newsletter_slug': self.newsletter.slug,
+            'token': self.verification_token
+        })
