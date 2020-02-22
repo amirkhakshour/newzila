@@ -82,6 +82,7 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         user = self.user_1
         self.app.post_json(self.newsletter_subscribe_url, user=user)  # create
         subscription = Subscription.objects.get(newsletter=self.newsletter, user=user)
+        print("subscription", subscription.__dict__)
         self.app.get(subscription.subscribe_verification_url())  # verify
         response = self.app.get(self.get_newsletter_unsubscribe_url(email=user.email))
 

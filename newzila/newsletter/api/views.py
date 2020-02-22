@@ -37,10 +37,19 @@ class NewsletterViewSet(RetrieveModelMixin, GenericViewSet):
 
     @action(detail=True, methods=["GET"], url_path='unsubscribe/(?P<email>[-_a-zA-Z0-9@.+~]+)')
     def unsubscribe(self, request, email, *args, **kwargs):
+        query_params = {
+            'newsletter': self.get_object(),
+        }
+        if request.user.is_authenticated:
+            query_params.update({
+                'user': request.user
+            })
+        else:
+            query_params.update({
+                'email_field': email,
+            })
         subscription = get_object_or_404(
-            Subscription,
-            newsletter=self.get_object(),
-            email_field__exact=email
+            Subscription, **query_params
         )
         subscription.subscribe_unsubscribe()
         return Response(status=status.HTTP_200_OK)
