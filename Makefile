@@ -52,4 +52,4 @@ statics:
 	./manage.py collectstatic --noinput
 
 server:
-	./manage.py runserver 127.0.0.1:8080
+	./manage.py runserver_plus 0.0.0.0:8000

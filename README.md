@@ -6,13 +6,22 @@ Newsletter-Application
 License
 :   MIT
 
-Setup locally without Docker
+Setup locally using docker-compose
 --------
 
-To run the tests, check your test
-coverage, and generate an HTML coverage report:
+In order to run locally you need docker-compose to build the docker containers:
 
-    $ make env
+    docker-compose -f local.yml up --build
+    
+Setup locally without docker-compose
+--------
+1- Make sure that you've a local smtp server listening on port 1025. and it's host address to .env file at the root directory:
+    
+    EMAIL_HOST=127.0.0.1
+
+2- Build/run the application executing the following commands:
+
+    $ make venv
     $ source venv/bin/activate
     $ make install_local
     $ export DJANGO_READ_DOT_ENV_FILE=True
