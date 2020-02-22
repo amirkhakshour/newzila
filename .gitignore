@@ -333,3 +333,4 @@ newzila/media/
 !.envs/.local/
 .idea
 db.sqlite
+db.sqlite-journal

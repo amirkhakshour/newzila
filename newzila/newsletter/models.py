@@ -6,7 +6,8 @@ from django.template.loader import select_template
 from django.core.mail import EmailMultiAlternatives
 from django.urls import reverse
 from django.contrib.sites.models import Site
-from django.core.exceptions import ValidationError
+
+from rest_framework.exceptions import ValidationError as APIValidationError
 
 from .utils import make_verification_token
 
@@ -157,21 +158,26 @@ class Subscription(models.Model):
         super(Subscription, self).save(*args, **kwargs)
 
     def pre_save_check(self, *args, **kwargs):
-        assert self.user or self.email_field, \
-            _('Neither an email nor a username is set. This asks for '
-              'inconsistency!')
+        if not (self.user or self.email_field):
+            raise APIValidationError(_('Neither an email nor a username is set. This asks for '
+                                       'inconsistency!'))
 
-        assert ((self.user and not self.email_field) or
-                (self.email_field and not self.user)), \
-            _('If user is set, email must be null and vice versa.')
+        if not ((self.user and not self.email_field) or
+                (self.email_field and not self.user)):
+            raise APIValidationError(_('If user is set, email must be null and vice versa.'))
 
-        assert not self.already_subscribed()
+        if self.already_subscribed():
+            raise APIValidationError(_('Already subscribed!'))
 
     def already_subscribed(self):
         if self.pk is not None:  # modifying/saving already created subscriptions
             return False
-        return Subscription.objects.filter(newsletter_id=self.newsletter.pk). \
-            filter(models.Q(email_field=self.email) | models.Q(user=self.user)).exists()
+        q = Subscription.objects.filter(newsletter_id=self.newsletter.pk)
+        if self.user:
+            q = q.filter(user=self.user)
+        else:
+            q = q.filter(email_field__exact=self.email)
+        return q.exists()
 
     def send_verification_email(self):
         email_context = {
@@ -211,6 +217,7 @@ class Subscription(models.Model):
         self.save()
 
     def subscribe_unsubscribe(self):
-        assert self.verification_date is not None, ValidationError("Your subscription is not verified")
+        if self.verification_date is None:
+            APIValidationError(_("Your subscription is not verified"))
         self.is_active = False
         self.save()

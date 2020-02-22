@@ -21,6 +21,18 @@ class NewsletterViewSet(RetrieveModelMixin, GenericViewSet):
 
     @action(detail=True, methods=["POST"])
     def subscribe(self, request, *args, **kwargs):
+        """
+        # Subscribe to a newsletter
+        ## Example of post data:
+        1. Anonymous users:
+        ```json
+        {
+            "email": 'email@example.com'
+        }
+        ```
+        2. Authenticated users, require no data to subscribe.
+        """
+
         _data = {}
         _data.update(request.data)
         # append last to prevent user overriding

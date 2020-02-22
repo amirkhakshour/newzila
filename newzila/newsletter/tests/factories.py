@@ -17,6 +17,7 @@ class SubscriptionAnonymousFactory(DjangoModelFactory):
     newsletter = SubFactory(NewsletterFactory)
     email = Faker("email")
     name = Sequence(lambda n: "Receiver %03d" % n)
+    user = None
 
     class Meta:
         model = Subscription
