@@ -15,9 +15,19 @@ In order to run locally you need docker-compose to build the docker containers:
     
 Setup locally without docker-compose
 --------
-1- Make sure that you've a local smtp server listening on port 1025. and it's host address to .env file at the root directory:
+1- Make sure that you've installed the following services locally or have access to them:
+    1-1:  Local smtp server listening on port 1025. 
+    1-2:  Redis server
+
+1- Create a .env file at the root folder of your directory. 
+Add the following settings to the file and modify them to meet your local configurations:
     
+    DEBUG=False
+    DATABASE_URL=sqlite://./db.sqlite
+    CELERY_BROKER_URL=redis://localhost:6379/0
+    USE_DOCKER=False
     EMAIL_HOST=127.0.0.1
+
 
 2- Build/run the application executing the following commands:
 
