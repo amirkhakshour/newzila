@@ -84,3 +84,20 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         subscription.refresh_from_db()
         self.assertEqual(200, response.status_code)
         self.assertFalse(subscription.is_active)
+
+    def test_anonym_can_unsubscribe(self):
+        post_params = {'email_field': 'dummy@example.com'}
+        self.app.post_json(self.newsletter_subscribe_url, params=post_params)
+        subscription = Subscription.objects.get(newsletter=self.newsletter, **post_params)
+        self.app.get(subscription.subscribe_verification_url())  # verify
+        response = self.app.get(self.newsletter_unsubscribe_url)
+
+        subscription.refresh_from_db()
+        self.assertEqual(200, response.status_code)
+        self.assertFalse(subscription.is_active)
+
+    def test_user_cant_unsubscribe_unverified_subscription(self):
+        """
+        We can't unsubscribe a not verified subscription
+        TODO
+        """
