@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .serializers import NewsletterSerializer, SubscriptionSerializer, SubscriptionReadSerializer
+from .serializers import NewsletterSerializer, SubscriptionSerializer
 from ..models import Newsletter, Subscription
 
 
@@ -35,25 +35,14 @@ class NewsletterViewSet(RetrieveModelMixin, GenericViewSet):
             serializer.save()
         return Response(status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["GET"])
-    def unsubscribe(self, request, *args, **kwargs):
-        newsletter = self.get_object()
-        _data = {}
-        _data.update(request.data)
-
-        # append last to prevent user overriding
-        _data.update({
-            'newsletter': newsletter.pk,
-            'user': request.user.pk,
-        })
-
-        context = self.get_serializer_context()
-        serializer = SubscriptionReadSerializer(data=_data, context=context)
-        if serializer.is_valid(raise_exception=True):
-            subscription = get_object_or_404(
-                Subscription, **serializer.validated_data
-            )
-            subscription.subscribe_unsubscribe()
+    @action(detail=True, methods=["GET"], url_path='unsubscribe/(?P<email>[-_a-zA-Z0-9@.+~]+)')
+    def unsubscribe(self, request, email, *args, **kwargs):
+        subscription = get_object_or_404(
+            Subscription,
+            newsletter=self.get_object(),
+            email_field__exact=email
+        )
+        subscription.subscribe_unsubscribe()
         return Response(status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["GET"], url_path='verify/(?P<token>[^/.]+)')

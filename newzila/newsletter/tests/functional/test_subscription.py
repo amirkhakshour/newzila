@@ -15,7 +15,11 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         self.newsletter = NewsletterFactory()
         kwargs = {'slug': self.newsletter.slug}
         self.newsletter_subscribe_url = reverse('api:newsletter-subscribe', kwargs=kwargs)
-        self.newsletter_unsubscribe_url = reverse('api:newsletter-unsubscribe', kwargs=kwargs)
+
+    def get_newsletter_unsubscribe_url(self, **kwargs):
+        orig_kwargs = {'slug': self.newsletter.slug}
+        orig_kwargs.update(kwargs)
+        return reverse('api:newsletter-unsubscribe', kwargs=orig_kwargs)
 
     def test_anonym_user_can_subscribe(self):
         post_params = {'email_field': 'dummy@example.com'}
@@ -79,7 +83,7 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         self.app.post_json(self.newsletter_subscribe_url, user=user)  # create
         subscription = Subscription.objects.get(newsletter=self.newsletter, user=user)
         self.app.get(subscription.subscribe_verification_url())  # verify
-        response = self.app.get(self.newsletter_unsubscribe_url, user=user)
+        response = self.app.get(self.get_newsletter_unsubscribe_url(email=user.email))
 
         subscription.refresh_from_db()
         self.assertEqual(200, response.status_code)
@@ -90,7 +94,7 @@ class TestNewsletterViewSet(EmailsMixin, WebTestCase):
         self.app.post_json(self.newsletter_subscribe_url, params=post_params)
         subscription = Subscription.objects.get(newsletter=self.newsletter, **post_params)
         self.app.get(subscription.subscribe_verification_url())  # verify
-        response = self.app.get(self.newsletter_unsubscribe_url)
+        response = self.app.get(self.get_newsletter_unsubscribe_url(email=post_params['email_field']))
 
         subscription.refresh_from_db()
         self.assertEqual(200, response.status_code)
